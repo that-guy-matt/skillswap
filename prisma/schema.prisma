@@ -15,12 +15,13 @@ datasource db {
 
 model User {
   id Int @id @default(autoincrement())
-  firstName String
+  firstName String?
   lastName String?
   email String @unique
+  password String
   bio String?
   location String?
-  contactInfo String
+  contactInfo String?
   userSkills UserSkill[]
   searchingSkills SearchingSkill[]
   connectionsFrom Connection[] @relation("Requester")
