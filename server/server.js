@@ -5,29 +5,47 @@ const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const {PrismaClient} = require("@prisma/client");
 
+// load environment variables from .env file
 dotenv.config({ path: path.resolve(__dirname, '../.env')});
 
+// initialize prisma and express application
 const prisma = new PrismaClient();
 const app = express();
 
+// middleware to parse JSON and URL encoded data
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+/**
+ * Root endpoint
+ * Currently responds only with hello world for testing
+ */
 app.get("/", (req, res) => {
     res.send("Hello world!");
 });
 
+/**
+ * Users endpoint
+ * fetches all users from database for testing purposes
+ */
 app.get("/users", async (req, res) => {
     try {
+
         const users = await prisma.user.findMany();
         res.json(users);
+
       } catch (err) {
+
         console.error("Error fetching users", err);
         res.status(500).json({ error: "Internal Server Error" });
+
       }
 });
 
-
+/**
+ * User signup endpoint
+ * creates a new user with hashed password
+ */
 app.post("/signup", async (req, res) => {
 
   const {email, password} = req.body;
@@ -43,7 +61,7 @@ app.post("/signup", async (req, res) => {
 
     });
 
-    console.log({ email: email, password: hashedPassword });
+    // console.log({ email: email, password: hashedPassword }); // for testing
     res.status(201).json(newUser);
 
   } catch (e) {
@@ -55,6 +73,10 @@ app.post("/signup", async (req, res) => {
   
 });
 
+/**
+ * Login endpoint
+ * authenticate user with email and password
+ */
 app.post("/login", async (req, res) => {
 
   const {email, password} = req.body;
@@ -62,6 +84,7 @@ app.post("/login", async (req, res) => {
 
     const user = await prisma.user.findUnique({
       where: { email: email }
+
     });
 
     if (!user) {
@@ -88,6 +111,7 @@ app.post("/login", async (req, res) => {
 
 });
 
+// define port to listen on and start server
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
