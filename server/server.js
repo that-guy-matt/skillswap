@@ -16,12 +16,24 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+// middleware to server static files
+app.use(express.static(path.join(__dirname, "../client/public")));
+app.use('/src', express.static(path.join(__dirname, "../client/src")))
+
 /**
  * Root endpoint
  * Currently responds only with hello world for testing
  */
 app.get("/", (req, res) => {
     res.send("Hello world!");
+});
+
+app.get("/signup", (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/public/signup.html'));
+});
+
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/public/login.html'));
 });
 
 /**
