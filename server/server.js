@@ -4,6 +4,7 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const {PrismaClient} = require("@prisma/client");
+const jwt = require("jsonwebtoken");
 
 // load environment variables from .env file
 dotenv.config({ path: path.resolve(__dirname, '../.env')});
@@ -42,15 +43,11 @@ app.get("/login", (req, res) => {
  */
 app.get("/users", async (req, res) => {
     try {
-
         const users = await prisma.user.findMany();
         res.json(users);
-
       } catch (err) {
-
         console.error("Error fetching users", err);
         res.status(500).json({ error: "Internal Server Error" });
-
       }
 });
 
@@ -61,26 +58,22 @@ app.get("/users", async (req, res) => {
 app.post("/signup", async (req, res) => {
 
   const {email, password} = req.body;
-  try {
 
+  try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await prisma.user.create({
-
       data: {
         email: email,
         password: hashedPassword
       }
-
     });
 
     // console.log({ email: email, password: hashedPassword }); // for testing
     res.status(201).json(newUser);
 
   } catch (e) {
-
     console.error("Error creating user", e);
     res.status(500).json({error: "Internal server error"});
-
   }
   
 });
@@ -93,32 +86,31 @@ app.post("/login", async (req, res) => {
 
   const {email, password} = req.body;
   try {
-
     const user = await prisma.user.findUnique({
       where: { email: email }
-
     });
 
     if (!user) {
-
       return res.status(404).json({error: "User not found"});
-
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-
-      res.status(200).json({error: "Invalid credentials"});
-
+      res.status(401).json({error: "Invalid credentials"});
     }
 
-    res.status(200).json({message: "Login successful"});
+    // generate JWT
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.status(200).json({message: `Logged in as: ${user.email}`, token});
 
   } catch (e) {
-
     console.error("Error logging in", e);
     res.status(500).json({error: "Internal server error"});
-
   }
 
 });
