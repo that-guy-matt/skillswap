@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 const {PrismaClient} = require("@prisma/client");
 const jwt = require("jsonwebtoken");
 
@@ -21,6 +22,12 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, "../client/public")));
 app.use('/src', express.static(path.join(__dirname, "../client/src")))
 
+// CORS config
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  methods: 'GET, POST, PUT, DELETE',
+  credentials: true
+}));
 /**
  * Root endpoint
  * Currently responds only with hello world for testing
