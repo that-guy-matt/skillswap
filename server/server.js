@@ -4,11 +4,11 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const {PrismaClient} = require("@prisma/client");
+const { PrismaClient } = require("@prisma/client");
 const jwt = require("jsonwebtoken");
 
 // load environment variables from .env file
-dotenv.config({ path: path.resolve(__dirname, '../.env')});
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // initialize prisma and express application
 const prisma = new PrismaClient();
@@ -16,7 +16,7 @@ const app = express();
 
 // middleware to parse JSON and URL encoded data
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // middleware to server static files
 app.use(express.static(path.join(__dirname, "../client/public")));
@@ -33,29 +33,31 @@ app.use(cors({
  * Currently responds only with hello world for testing
  */
 app.get("/", (req, res) => {
-    res.send("Hello world!");
+  res.send("Hello world!");
 });
 
-app.get("/signup", (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/public/signup.html'));
-});
+// these shouldn't be needed anymore
+// this is handled with the nextjs front end now
+// app.get("/signup", (req, res) => {
+//   res.sendFile(path.join(__dirname, '../client/public/signup.html'));
+// });
 
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/public/login.html'));
-});
+// app.get("/login", (req, res) => {
+//   res.sendFile(path.join(__dirname, '../client/public/login.html'));
+// });
 
 /**
  * Users endpoint
  * fetches all users from database for testing purposes
  */
 app.get("/users", async (req, res) => {
-    try {
-        const users = await prisma.user.findMany();
-        res.json(users);
-      } catch (err) {
-        console.error("Error fetching users", err);
-        res.status(500).json({ error: "Internal Server Error" });
-      }
+  try {
+    const users = await prisma.user.findMany();
+    res.json(users);
+  } catch (err) {
+    console.error("Error fetching users", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 /**
@@ -64,7 +66,7 @@ app.get("/users", async (req, res) => {
  */
 app.post("/signup", async (req, res) => {
 
-  const {email, password} = req.body;
+  const { email, password } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -80,9 +82,9 @@ app.post("/signup", async (req, res) => {
 
   } catch (e) {
     console.error("Error creating user", e);
-    res.status(500).json({error: "Internal server error"});
+    res.status(500).json({ error: "Internal server error" });
   }
-  
+
 });
 
 /**
@@ -91,19 +93,19 @@ app.post("/signup", async (req, res) => {
  */
 app.post("/login", async (req, res) => {
 
-  const {email, password} = req.body;
+  const { email, password } = req.body;
   try {
     const user = await prisma.user.findUnique({
       where: { email: email }
     });
 
     if (!user) {
-      return res.status(404).json({error: "User not found"});
+      return res.status(404).json({ error: "User not found" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      res.status(401).json({error: "Invalid credentials"});
+      res.status(401).json({ error: "Invalid credentials" });
     }
 
     // generate JWT
@@ -113,11 +115,11 @@ app.post("/login", async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    res.status(200).json({message: `Logged in as: ${user.email}`, token});
+    res.status(200).json({ message: `Logged in as: ${user.email}`, token });
 
   } catch (e) {
     console.error("Error logging in", e);
-    res.status(500).json({error: "Internal server error"});
+    res.status(500).json({ error: "Internal server error" });
   }
 
 });
@@ -126,5 +128,5 @@ app.post("/login", async (req, res) => {
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
-    console.log(`server is up and listening on port ${port}`);
+  console.log(`server is up and listening on port ${port}`);
 });
