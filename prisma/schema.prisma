@@ -13,84 +13,84 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model app_user {
   id Int @id @default(autoincrement())
-  firstName String?
-  lastName String?
+  first_name String?
+  last_name String?
   email String @unique
   password String
   bio String?
   location String?
-  contactInfo String?
-  userSkills UserSkill[]
-  searchingSkills SearchingSkill[]
-  connectionsFrom Connection[] @relation("Requester")
-  connectionsTo Connection[] @relation("Receiver")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  contact_info String?
+  user_skills user_skill[]
+  searching_skills searching_skill[]
+  connections_from connection[] @relation("Requester")
+  connections_to connection[] @relation("Receiver")
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 }
 
-model UserSkill {
+model user_skill {
   id Int @id @default(autoincrement())
-  userId Int @unique
-  user User @relation(fields: [userId], references: [id])
-  skillId Int
-  skill Skill @relation(fields: [skillId], references: [id])
+  user_id Int
+  user app_user @relation(fields: [user_id], references: [id])
+  skill_id Int
+  skill skill @relation(fields: [skill_id], references: [id])
   proficiency Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 }
 
-model SearchingSkill {
+model searching_skill {
   id Int @id @default(autoincrement())
-  userId Int @unique
-  user User @relation(fields: [userId], references: [id])
-  skillId Int
-  skill Skill @relation(fields: [skillId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  user_id Int
+  user app_user @relation(fields: [user_id], references: [id])
+  skill_id Int
+  skill skill @relation(fields: [skill_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 }
 
-model Skill {
-  id Int @id @default(autoincrement())
-  name String
-  users UserSkill[]
-  searchers SearchingSkill[]
-  categories CategoriesOnSkills[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-}
-
-model Category {
+model skill {
   id Int @id @default(autoincrement())
   name String
-  skills CategoriesOnSkills[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  users user_skill[]
+  searchers searching_skill[]
+  categories category_skill[]
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 }
 
-model CategoriesOnSkills {
+model category {
   id Int @id @default(autoincrement())
-  skillId Int
-  skill Skill @relation(fields: [skillId], references: [id])
-  categoryId Int
-  category Category @relation(fields: [categoryId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  name String
+  skills category_skill[]
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 }
 
-model Connection {
+model category_skill {
   id Int @id @default(autoincrement())
-  requesterId Int
-  requester User @relation("Requester", fields: [requesterId], references: [id])
-  receiverId Int
-  receiver User @relation("Receiver", fields: [receiverId], references: [id])
-  Status ConnectionStatus
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  skill_id Int
+  skill skill @relation(fields: [skill_id], references: [id])
+  category_id Int
+  category category @relation(fields: [category_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 }
 
-enum ConnectionStatus {
+model connection {
+  id Int @id @default(autoincrement())
+  requester_id Int
+  requester app_user @relation("Requester", fields: [requester_id], references: [id])
+  receiver_id Int
+  receiver app_user @relation("Receiver", fields: [receiver_id], references: [id])
+  status connection_status
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+
+enum connection_status {
   PENDING
   ACCEPTED
   DECLINED

@@ -1,3 +1,4 @@
+
 const express = require("express");
 const dotenv = require("dotenv");
 const path = require("path");
@@ -94,6 +95,7 @@ app.post("/signup", async (req, res) => {
 app.post("/login", async (req, res) => {
 
   const { email, password } = req.body;
+  console.log(email, password)
   try {
     const user = await prisma.user.findUnique({
       where: { email: email }
@@ -105,24 +107,45 @@ app.post("/login", async (req, res) => {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
     // generate JWT
     const token = jwt.sign(
       { userId: user.id },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '1y' }
     );
 
-    res.status(200).json({ message: `Logged in as: ${user.email}`, token });
+    return res.status(200).json({ message: `Logged in as: ${user.email}`, token });
 
   } catch (e) {
     console.error("Error logging in", e);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 
 });
+
+app.get("/profile", async (req, res) => {
+
+  const { token } = req.query;
+
+  try {
+    const decodedInfo = jwt.verify(token, process.env.JWT_SECRET)
+    const user = await prisma.user.findUnique({
+      where: { id: decodedInfo.userId },
+      select: { firstName: true, lastName: true, email: true }
+    });
+    return res.status(200).json(user);
+
+  } catch (e) {
+    console.error("Error logging in", e);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+
+});
+
+// TODO: get users with matching skills
 
 // define port to listen on and start server
 const port = process.env.PORT || 3000;
@@ -130,3 +153,4 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`server is up and listening on port ${port}`);
 });
+
