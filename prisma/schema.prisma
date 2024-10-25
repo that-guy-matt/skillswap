@@ -13,7 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model app_user {
+model users {
   id Int @id @default(autoincrement())
   first_name String?
   last_name String?
@@ -22,75 +22,75 @@ model app_user {
   bio String?
   location String?
   contact_info String?
-  user_skills user_skill[]
-  searching_skills searching_skill[]
-  connections_from connection[] @relation("Requester")
-  connections_to connection[] @relation("Receiver")
+  user_skills user_skills[]
+  searching_skills searching_skills[]
+  links_from links[] @relation("Requester")
+  links_to links[] @relation("Receiver")
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 }
 
-model user_skill {
+model user_skills {
   id Int @id @default(autoincrement())
   user_id Int
-  user app_user @relation(fields: [user_id], references: [id])
+  user users @relation(fields: [user_id], references: [id])
   skill_id Int
-  skill skill @relation(fields: [skill_id], references: [id])
+  skill skills @relation(fields: [skill_id], references: [id])
   proficiency Int
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 }
 
-model searching_skill {
+model searching_skills {
   id Int @id @default(autoincrement())
   user_id Int
-  user app_user @relation(fields: [user_id], references: [id])
+  user users @relation(fields: [user_id], references: [id])
   skill_id Int
-  skill skill @relation(fields: [skill_id], references: [id])
+  skill skills @relation(fields: [skill_id], references: [id])
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 }
 
-model skill {
+model skills {
   id Int @id @default(autoincrement())
   name String
-  users user_skill[]
-  searchers searching_skill[]
-  categories category_skill[]
+  users user_skills[]
+  searchers searching_skills[]
+  categories category_skills[]
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 }
 
-model category {
+model categories {
   id Int @id @default(autoincrement())
   name String
-  skills category_skill[]
+  skills category_skills[]
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 }
 
-model category_skill {
+model category_skills {
   id Int @id @default(autoincrement())
   skill_id Int
-  skill skill @relation(fields: [skill_id], references: [id])
+  skill skills @relation(fields: [skill_id], references: [id])
   category_id Int
-  category category @relation(fields: [category_id], references: [id])
+  category categories @relation(fields: [category_id], references: [id])
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 }
 
-model connection {
+model links {
   id Int @id @default(autoincrement())
   requester_id Int
-  requester app_user @relation("Requester", fields: [requester_id], references: [id])
+  requester users @relation("Requester", fields: [requester_id], references: [id])
   receiver_id Int
-  receiver app_user @relation("Receiver", fields: [receiver_id], references: [id])
-  status connection_status
+  receiver users @relation("Receiver", fields: [receiver_id], references: [id])
+  status links_status
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 }
 
-enum connection_status {
+enum links_status {
   PENDING
   ACCEPTED
   DECLINED
