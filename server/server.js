@@ -53,7 +53,7 @@ app.get("/", (req, res) => {
  */
 app.get("/users", async (req, res) => {
   try {
-    const users = await prisma.user.findMany();
+    const users = await prisma.users.findMany();
     res.json(users);
   } catch (err) {
     console.error("Error fetching users", err);
@@ -71,7 +71,7 @@ app.post("/signup", async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await prisma.user.create({
+    const newUser = await prisma.users.create({
       data: {
         email: email,
         password: hashedPassword
@@ -97,7 +97,7 @@ app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   console.log(email, password)
   try {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { email: email }
     });
 
@@ -132,7 +132,7 @@ app.get("/profile", async (req, res) => {
 
   try {
     const decodedInfo = jwt.verify(token, process.env.JWT_SECRET)
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: decodedInfo.userId },
       select: { firstName: true, lastName: true, email: true }
     });
