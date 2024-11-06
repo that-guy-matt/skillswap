@@ -53,7 +53,7 @@ app.get("/", (req, res) => {
  */
 app.get("/users", async (req, res) => {
   try {
-    const users = await prisma.users.findMany({ include: { user_skills: true, searching_skills: true, password: false } });
+    const users = await prisma.users.findMany({ include: { last_name: true, first_name: true, user_skills: true, searching_skills: true, password: false } });
     res.json(users);
   } catch (err) {
     console.error("Error fetching users", err);
