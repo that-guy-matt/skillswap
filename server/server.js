@@ -53,10 +53,24 @@ app.get("/", (req, res) => {
  */
 app.get("/users", async (req, res) => {
   try {
-    const users = await prisma.users.findMany();
+    const users = await prisma.users.findMany({ include: { user_skills: true, searching_skills: true, password: false } });
     res.json(users);
   } catch (err) {
     console.error("Error fetching users", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+/**
+ * Skills endpoint
+ * fetches all skills from database for testing purposes
+ */
+app.get("/skills", async (req, res) => {
+  try {
+    const skills = await prisma.skills.findMany();
+    res.json(skills);
+  } catch (err) {
+    console.error("Error fetching skills", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
@@ -70,6 +84,16 @@ app.post("/signup", async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // check if new user's email already exists
+    const userExists = await prisma.users.findUnique({
+      where: { email: email }
+    });
+
+    if (userExists) {
+      return res.status(500).json({ error: "Email already in use" });
+    }
+
+    // create new user
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await prisma.users.create({
       data: {
@@ -77,9 +101,14 @@ app.post("/signup", async (req, res) => {
         password: hashedPassword
       }
     });
+    // generate JWT
+    const token = jwt.sign(
+      { userId: newUser.id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1y' }
+    );
 
-    // console.log({ email: email, password: hashedPassword }); // for testing
-    res.status(201).json(newUser);
+    return res.status(200).json({ message: `Signed up as: ${newUser.email}`, token });
 
   } catch (e) {
     console.error("Error creating user", e);
@@ -134,7 +163,7 @@ app.get("/profile", async (req, res) => {
     const decodedInfo = jwt.verify(token, process.env.JWT_SECRET)
     const user = await prisma.users.findUnique({
       where: { id: decodedInfo.userId },
-      select: { firstName: true, lastName: true, email: true }
+      select: { first_name: true, last_name: true, email: true }
     });
     return res.status(200).json(user);
 
