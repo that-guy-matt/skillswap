@@ -161,6 +161,8 @@ app.post("/login", async (req, res) => {
 
 });
 
+// app.patch("/profile", )
+
 app.get("/profile", async (req, res) => {
 
   const { token } = req.query;
@@ -169,7 +171,12 @@ app.get("/profile", async (req, res) => {
     const decodedInfo = jwt.verify(token, process.env.JWT_SECRET)
     const user = await prisma.users.findUnique({
       where: { id: decodedInfo.userId },
-      select: { first_name: true, last_name: true, email: true }
+      select: {
+        first_name: true,
+        last_name: true,
+        email: true,
+        bio: true,
+      }
     });
     return res.status(200).json(user);
 
